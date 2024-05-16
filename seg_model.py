@@ -1,3 +1,5 @@
+import loss
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -74,7 +76,7 @@ class CNNDecoder(nn.Module):
                 nn.ReLU(),
             ]
             if upsample_per_layer[i]:
-                block.append(nn.Upsample(scale_factor=upsample_per_layer[i], mode='bicubic'))
+                block.append(nn.Upsample(scale_factor=upsample_per_layer[i], mode='bilinear'))
                 h *= upsample_per_layer[i]
                 w *= upsample_per_layer[i]
 
@@ -91,11 +93,12 @@ class CNNDecoder(nn.Module):
         return x
 
 class GenWeakSegNet(nn.Module):
-    def __init__(self, num_classes=2):
+    def __init__(self, classifier, num_classes=2, hparams=None):
         super().__init__()
 
         self.input_shape = (3, 224, 224)
         self.num_classes = num_classes
+        self.hparams = hparams
 
         out_channels = [64, 64, 128, 128, 256, 256, 512, 512]
         kernel_sizes = [3, 3, 3, 3, 3, 3, 3, 3]
@@ -122,9 +125,35 @@ class GenWeakSegNet(nn.Module):
         self.op_cls_img = nn.Conv2d(out_channels[-1], 3*num_classes, kernel_size=3, padding='same')
         self.op_cls_mask = nn.Conv2d(out_channels[-1], num_classes, kernel_size=3, padding='same')
 
+        self.recon_loss_fn = loss.ReconLoss(L=1)
+        self.mask_reg_loss_fn = loss.MaskRegLoss(num_classes)
+
+        for params in classifier.parameters():
+            params.requires_grad = False
+        self.cls_guide_loss_fn = loss.ClsGuideLoss(classifier)
+
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
         y_img = self.op_cls_img(x).view(x.shape[0], self.num_classes, *self.input_shape)
+        y_img = F.sigmoid(y_img)
         y_mask = self.op_cls_mask(x)
         return (y_img, y_mask)
+    
+    def loss_fn(self, x, label, y_img, y_mask):
+        recon = self.recon_loss_fn(x, y_img, y_mask)
+        mask_reg = self.mask_reg_loss_fn(label, y_mask)
+        cls_guide = self.cls_guide_loss_fn(label, y_img, y_mask)
+        
+        loss = (
+            self.hparams['recon']*recon +
+            self.hparams['mask_reg']*mask_reg +
+            self.hparams['cls_guide']*cls_guide
+        )
+        loss_dict = {
+            'loss': loss,
+            'recon': recon,
+            'mask_reg': mask_reg,
+            'cls_guide': cls_guide,
+        }
+        return (loss, loss_dict)
