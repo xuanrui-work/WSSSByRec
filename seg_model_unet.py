@@ -97,8 +97,6 @@ class CNNDecoder(nn.Module):
         self.layers = layers
     
     def forward(self, x, x_cat):
-        for y in x_cat:
-            print(y.shape)
         for i, layer in enumerate(self.layers):
             x = layer(x)
             if isinstance(layer, nn.Upsample):
@@ -129,9 +127,9 @@ class GenWeakSegNet(nn.Module):
         kernel_sizes = kernel_sizes[::-1]
         upsample = maxpool[::-1]
 
-        print(out_channels)
-        print(kernel_sizes)
-        print(upsample)
+        # print(out_channels)
+        # print(kernel_sizes)
+        # print(upsample)
 
         self.decoder = CNNDecoder(
             input_shape=input_shape,
