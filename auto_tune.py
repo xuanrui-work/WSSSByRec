@@ -21,8 +21,8 @@ kernel = 'python3'
 
 # combinations of hyperparameters
 hparams_c = {
-    'cls_guide': [1e-1, 5e-2, 1e-2],
-    'mask_reg': [1e-1, 5e-2, 1e-2],
+    'cls_guide': [1e-1, 5e-2, 1e-2, 5e-3, 1e-3],
+    'mask_reg': [1e-1, 5e-2, 1e-2, 5e-3, 1e-3],
 }
 
 hparams_c = [
