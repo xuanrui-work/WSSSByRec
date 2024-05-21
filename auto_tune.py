@@ -16,7 +16,7 @@ hparams_file = pathlib.Path('./hparams_seg.yaml')
 save_dir = pathlib.Path('./executed_notebooks')
 save_dir.mkdir(parents=True, exist_ok=True)
 
-timeout = 3600
+timeout = 24 * 3600
 kernel = 'python3'
 
 # combinations of hyperparameters
