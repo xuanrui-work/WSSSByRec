@@ -13,8 +13,7 @@ class ReconLoss(nn.Module):
         loss = 0
         for _ in range(self.L):
             # reparameterization of categorical distribution
-            sm = F.gumbel_softmax(y_mask.view(-1, num_classes), hard=True)
-            sm = sm.view(y_mask.shape)
+            sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
             # compose the image from pixelets and masks
             x_hat = torch.sum(sm * y_img, dim=1)
             loss += F.mse_loss(x_hat, x)
@@ -52,8 +51,7 @@ class ClsGuideLoss(nn.Module):
 
         for _ in range(self.L):
             # reparameterization of categorical distribution
-            sm = F.gumbel_softmax(y_mask.view(-1, num_classes), hard=True)
-            sm = sm.view(y_mask.shape)
+            sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
 
             loss = 0
             for i in range(num_classes):
