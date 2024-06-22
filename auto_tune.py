@@ -16,11 +16,12 @@ hparams_file = pathlib.Path('./hparams_seg.yaml')
 save_dir = pathlib.Path('./executed_notebooks')
 save_dir.mkdir(parents=True, exist_ok=True)
 
-timeout = 24 * 3600
+timeout = 24*3600
 kernel = 'python3'
 
 # combinations of hyperparameters
 hparams_c = {
+    'batch_size': [8],
     'cls_guide': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
     'mask_reg': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
 }

@@ -142,7 +142,7 @@ class GenWeakSegNet(nn.Module):
         self.op_cls_mask = nn.Conv2d(out_channels[-1], num_classes, kernel_size=3, padding='same')
 
         self.recon_loss_fn = loss.ReconLoss(L=1)
-        self.mask_reg_loss_fn = loss.MaskRegLoss(num_classes)
+        self.mask_reg_loss_fn = loss.MaskRegLossV2(num_classes)
 
         for params in classifier.parameters():
             params.requires_grad = False

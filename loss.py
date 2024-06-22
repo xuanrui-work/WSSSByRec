@@ -13,7 +13,8 @@ class ReconLoss(nn.Module):
         loss = 0
         for _ in range(self.L):
             # reparameterization of categorical distribution
-            sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
+            # sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
+            sm = F.softmax(y_mask, dim=1)
             # compose the image from pixelets and masks
             x_hat = torch.sum(sm * y_img, dim=1)
             loss += F.mse_loss(x_hat, x)
@@ -34,6 +35,44 @@ class MaskRegLoss(nn.Module):
         loss /= label.shape[0]
         return loss
 
+class MaskRegLossV2(nn.Module):
+    def __init__(
+        self,
+        num_classes,
+        alpha=0.01,
+        beta=3,
+        epsilon=1e-6
+    ):
+        super().__init__()
+        self.num_classes = num_classes
+        self.alpha = alpha
+        self.beta = beta
+        self.epsilon = epsilon
+    
+    def get_y_ngwp(self, y, m):
+        y_ngwp = (
+            torch.sum(m*y, dim=(-2, -1)) /
+            torch.sum(m, dim=(-2, -1)) + self.epsilon
+        )
+        return y_ngwp
+
+    def get_y_size_focal(self, m):
+        h, w = m.shape[-2:]
+        m_b = 1/(h*w)*torch.sum(m, dim=(-2, -1))
+        y_size_focal = (
+            (1 - m_b)**self.beta * torch.log(self.alpha + m_b)
+        )
+        return y_size_focal
+    
+    def forward(self, label, y_mask):
+        y = y_mask
+        m = F.softmax(y_mask, dim=1)
+        y_ngwp = self.get_y_ngwp(y, m)
+        y_size = self.get_y_size_focal(m)
+        y_pred = y_ngwp + y_size
+        loss = F.binary_cross_entropy(F.sigmoid(y_pred), label)
+        return loss
+
 class ClsGuideLoss(nn.Module):
     def __init__(self, classifier, L=1, eps=1e-6):
         super().__init__()
@@ -51,11 +90,12 @@ class ClsGuideLoss(nn.Module):
 
         for _ in range(self.L):
             # reparameterization of categorical distribution
-            sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
+            # sm = F.gumbel_softmax(y_mask, dim=1, hard=True)
+            sm = F.softmax(y_mask, dim=1)
 
             loss = 0
             for i in range(num_classes):
-                # label 0 is the background class
+                # label num_classes-1 is the background class
                 if i == num_classes-1:
                     x_hat = sm[:, i] * y_img[:, i]
                     y_pred = self.classifier(x_hat)
