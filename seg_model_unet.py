@@ -97,6 +97,7 @@ class CNNDecoder(nn.Module):
         self.layers = layers
     
     def forward(self, x, x_cat):
+        x_cat = x_cat.copy()
         for i, layer in enumerate(self.layers):
             x = layer(x)
             if isinstance(layer, nn.Upsample):
@@ -131,7 +132,14 @@ class GenWeakSegNet(nn.Module):
         # print(kernel_sizes)
         # print(upsample)
 
-        self.decoder = CNNDecoder(
+        self.decoder_img = CNNDecoder(
+            input_shape=input_shape,
+            out_channels_per_layer=out_channels,
+            kernel_sizes_per_layer=kernel_sizes,
+            upsample_per_layer=upsample,
+        )
+
+        self.decoder_mask = CNNDecoder(
             input_shape=input_shape,
             out_channels_per_layer=out_channels,
             kernel_sizes_per_layer=kernel_sizes,
@@ -142,7 +150,7 @@ class GenWeakSegNet(nn.Module):
         self.op_cls_mask = nn.Conv2d(out_channels[-1], num_classes, kernel_size=3, padding='same')
 
         self.recon_loss_fn = loss.ReconLoss(L=1)
-        self.mask_reg_loss_fn = loss.MaskRegLossV2(num_classes)
+        self.mask_reg_loss_fn = loss.MaskRegLoss(num_classes)
 
         for params in classifier.parameters():
             params.requires_grad = False
@@ -150,11 +158,18 @@ class GenWeakSegNet(nn.Module):
 
     def forward(self, x):
         # unet forward pass
+        # encode
         x, x_cat = self.encoder(x)
-        x = self.decoder(x, x_cat)
-        y_img = self.op_cls_img(x).view(x.shape[0], self.num_classes, *self.input_shape)
+        
+        # decode to images
+        x_img = self.decoder_img(x, x_cat)
+        y_img = self.op_cls_img(x_img).view(x.shape[0], self.num_classes, *self.input_shape)
         y_img = F.sigmoid(y_img)
-        y_mask = self.op_cls_mask(x)
+
+        # decode to masks
+        x_mask = self.decoder_mask(x, x_cat)
+        y_mask = self.op_cls_mask(x_mask)
+
         return (y_img, y_mask)
     
     def loss_fn(self, x, label, y_img, y_mask):

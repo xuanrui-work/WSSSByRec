@@ -21,8 +21,7 @@ kernel = 'python3'
 
 # combinations of hyperparameters
 hparams_c = {
-    'batch_size': [8],
-    'cls_guide': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+    'batch_size': [4],
     'mask_reg': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
 }
 
