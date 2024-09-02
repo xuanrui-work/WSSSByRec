@@ -1,5 +1,5 @@
 data/
-dataset/
+dataset/preprocessed
 logs*/
 
 # Byte-compiled / optimized / DLL files
