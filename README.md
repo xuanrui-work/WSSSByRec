@@ -1,11 +1,11 @@
-# GenWeakSegNet
+# WSSSByRec
 
-This repository contains the implementation of the idea described in [Weak Segmentation by Reconstruction from Structured Decomposition](./docs/CS_898___Project_Report___Weak_Segmentation_by_Re_Composition.pdf), an approach to weakly supervised segmentation from image tags.
+This repository contains the implementation of the idea described in [Semantic Segmentation from Image Labels by Reconstruction from Structured Decomposition](./docs/Semantic_Segmentation_from_Image_Labels_by_Reconstruction_from_Structured_Decomposition.pdf), an approach to weakly supervised segmentation from image tags.
 
 
 ## Dataset
 
-For our experiments, we use a custom dataset derived from the ImageNet-1K dataset. The dataset can be downloaded from [here](https://uofwaterloo-my.sharepoint.com/:u:/g/personal/x64zeng_uwaterloo_ca/EcfrK8hHh1JNrEL9tX80FMQBYbPJkKujw8n67pMd8Akf4A).
+For our experiments, we use a custom dataset derived from the ImageNet-1K dataset. The dataset can be downloaded from [here](https://uofwaterloo-my.sharepoint.com/:u:/g/personal/x64zeng_uwaterloo_ca/EcfrK8hHh1JNrEL9tX80FMQBYbPJkKujw8n67pMd8Akf4A). It can also be generated from the original ImageNet-1K dataset using the notebook [preprocess_dataset.ipynb](./dataset/preprocess_dataset.ipynb).
 
 
 ## Getting started
