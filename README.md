@@ -43,4 +43,18 @@ tensorboard --logdir=logs
 <img src="./docs/images/val-1-mask-overlay.png" width=500/>
 
 
+## Citation
+```
+@misc{zeng2024semanticsegmentationimagelabels,
+      title={Semantic Segmentation from Image Labels by Reconstruction from Structured Decomposition}, 
+      author={Xuanrui Zeng},
+      year={2024},
+      eprint={2409.01472},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2409.01472}, 
+}
+```
+
+
 
